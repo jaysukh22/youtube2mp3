@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>YouTube MP3 Downloader</title>
+    <style>
+      .loading-spinner {
+        display: inline-block;
+        border: 4px solid rgba(0, 0, 0, 0.3);
+        text-align: center;
+        border-radius: 50%;
+        border-top: 4px solid #ffffff; /* Replace with your preferred color */
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body style="background-color: #2c2c2c">
+    <h1
+      style="
+        text-align: center;
+        font-family: sans-serif;
+        margin: 50px 0px;
+        color: #ffffff;
+      "
+    >
+      YouTube MP3 Downloader
+    </h1>
+ 
+    <form id="downloadForm" style="text-align: center">
+      <input
+        type="text"
+        id="url"
+        name="url"
+        placeholder="paste Youtube link here"
+        required
+        style="
+          padding: 15px 15px;
+          border: 1px solid #00b887;
+          background-color: #2c2c2c;
+          border-radius: 8px;
+          width: 35%;
+          color: #ffffff;
+          margin-right: 25px;
+        "
+      />
+      <button
+        type="submit"
+        style="
+          padding: 13px 25px;
+          border-radius: 8px;
+          font-size: 18px;
+          font-weight: 700;
+          color: #ffffff;
+          font-family: sans-serif;
+          background-color: #00b887;
+          border: 1px solid #00b887;
+          cursor: pointer;
+        "
+      >
+        Convert
+      </button>
+    </form>
+
+    <div
+      id="loading"
+      style="display: none; text-align: center; margin: 30px 0px"
+    >
+      <div class="loading-spinner"></div>
+      <h5
+        style="
+          text-align: center;
+          font-family: sans-serif;
+          margin: 20px 0px;
+          color: #ffffff;
+        "
+      >
+        Loading...
+      </h5>
+    </div>
+
+    <h4 id="title" style="text-align: center; color: #ffffff"></h4>
+
+    <div
+      id="downloadLink"
+      style="display: none; text-align: center; margin-top: 60px"
+    >
+      <a
+        id="downloadButton"
+        href="#"
+        style="
+          padding: 10px 15px;
+          border-radius: 8px;
+          border: none;
+          font-weight: 700;
+          color: #ffffff;
+          background-color: #00b887;
+          cursor: pointer;
+          font-family: sans-serif;
+          text-decoration: none;
+        "
+      >
+        Download Mp3
+      </a>
+    </div>
+
+    <script>
+      const form = document.getElementById("downloadForm");
+      const loadingDiv = document.getElementById("loading");
+      const downloadLinkDiv = document.getElementById("downloadLink");
+      const downloadButton = document.getElementById("downloadButton");
+      const filename = document.getElementById("title");
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const url = form.url.value;
+        loadingDiv.style.display = "block";
+
+        const response = await fetch(
+          `/videoInfo?url=${encodeURIComponent(url)}`
+        );
+        const data = await response.json();
+        downloadButton.download = `${data.videoDetails.title}.mp3`;
+
+        try {
+          const response = await fetch(
+            `/download?url=${encodeURIComponent(url)}`
+          );
+          const blob = await response.blob();
+
+          loadingDiv.style.display = "none";
+          downloadLinkDiv.style.display = "block";
+          downloadButton.href = URL.createObjectURL(blob);
+          filename.textContent = data.videoDetails.title;
+        } catch (err) {
+          console.error("Error downloading MP3:", err);
+          alert("Error occurred during download");
+          loadingDiv.style.display = "none";
+        }
+      });
+    </script>
+  </body>
+</html>
